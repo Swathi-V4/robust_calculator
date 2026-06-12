@@ -1,67 +1,27 @@
 import pytest
-from unittest.mock import patch
-
-from calculator.operations import Calculator
-from calculator.cli import get_operation
+from app.operation import Operation, Add, Subtract, Multiply, Divide
 
 
-@pytest.fixture
-def calc():
-    return Calculator()
+def test_base_operation():
+    operation = Operation()
+
+    with pytest.raises(NotImplementedError):
+        operation.execute(1, 2)
 
 
-def test_add(calc):
-    assert calc.add(2, 3) == 5
+@pytest.mark.parametrize(
+    "operation,a,b,expected",
+    [
+        (Add(), 2, 3, 5),
+        (Subtract(), 5, 2, 3),
+        (Multiply(), 4, 3, 12),
+        (Divide(), 10, 2, 5),
+    ],
+)
+def test_operations(operation, a, b, expected):
+    assert operation.execute(a, b) == expected
 
 
-def test_add_negative(calc):
-    assert calc.add(-1, -1) == -2
-
-
-def test_subtract(calc):
-    assert calc.subtract(5, 3) == 2
-
-
-def test_subtract_negative(calc):
-    assert calc.subtract(-1, -1) == 0
-
-
-def test_multiply(calc):
-    assert calc.multiply(2, 3) == 6
-
-
-def test_multiply_negative(calc):
-    assert calc.multiply(-2, 3) == -6
-
-
-def test_divide(calc):
-    assert calc.divide(6, 2) == 3
-
-
-def test_divide_float(calc):
-    assert calc.divide(5, 2) == 2.5
-
-
-def test_divide_by_zero(calc):
-    with pytest.raises(ValueError):
-        calc.divide(5, 0)
-
-
-def test_get_operation_add():
-    with patch("builtins.input", return_value="add"):
-        assert get_operation() == "add"
-
-
-def test_get_operation_subtract():
-    with patch("builtins.input", return_value="subtract"):
-        assert get_operation() == "subtract"
-
-
-def test_get_operation_multiply():
-    with patch("builtins.input", return_value="multiply"):
-        assert get_operation() == "multiply"
-
-
-def test_get_operation_quit():
-    with patch("builtins.input", return_value="quit"):
-        assert get_operation() == "quit"
+def test_divide_by_zero():
+    with pytest.raises(ZeroDivisionError):
+        Divide().execute(10, 0)
